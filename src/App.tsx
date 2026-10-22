@@ -129,36 +129,27 @@ function MainContent() {
 
   // Real-time opinions subscription from Firestore
   useEffect(() => {
-    let hasSeeded = false;
     const unsubscribe = subscribeToOpinions(
-      async (newOpinions) => {
-        if (newOpinions.length === 0 && !hasSeeded) {
-          hasSeeded = true;
-          // Seed initial opinions so the app displays vibrant content immediately
-          try {
-            for (const op of SEED_OPINIONS) {
-              await createOpinion(op);
-            }
-          } catch {
-            // Rules or permissions might prevent seed if unauthenticated, use local fallback
-            setOpinions(
-              SEED_OPINIONS.map((s, idx) => ({
-                ...s,
-                id: `seed-${idx}`
-              }))
-            );
-          }
+      (newOpinions) => {
+        if (newOpinions.length === 0) {
+          // If the cloud database has no submitted opinions yet, show default demo opinions in the UI
+          setOpinions(
+            SEED_OPINIONS.map((s, idx) => ({
+              ...s,
+              id: `demo-${idx}`
+            }))
+          );
         } else {
           setOpinions(newOpinions);
         }
         setLoadingOpinions(false);
       },
       () => {
-        // Fallback to local opinions if network fails
+        // Fallback to demo opinions if network fails
         setOpinions(
           SEED_OPINIONS.map((s, idx) => ({
             ...s,
-            id: `seed-${idx}`
+            id: `demo-${idx}`
           }))
         );
         setLoadingOpinions(false);
